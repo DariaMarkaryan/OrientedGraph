@@ -1,6 +1,7 @@
+package orgraph
+
 class Graph {
     var numOfVertices = 0
-
     private val vertices = mutableMapOf<String, Vertex>()
 
     inner class Vertex(val name: String) {
