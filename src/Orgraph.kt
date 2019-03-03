@@ -12,12 +12,20 @@ class Graph {
 
     private operator fun get(name: String) = vertices[name] ?: throw IllegalArgumentException()
 
+    fun getWeight(nameFrom: String, nameTo: String) = vertices[nameFrom]!!.neighborsOut[vertices[nameTo]]!!
+
     fun addVertex(name: String) {
-        vertices[name] = Vertex(name)
-        numOfVertices++
+        if(name !in vertices.keys) {
+            vertices[name] = Vertex(name)
+            numOfVertices++
+        } else throw IllegalArgumentException("Выберите другое имя, это уже занято")
     }
 
     fun deleteVertex(name: String) {
+       for(v in vertices[name]!!.neighborsIn.keys){
+           v.neighborsOut.remove(vertices[name])
+       }
+        vertices.remove(name)
         numOfVertices--
     }
 
@@ -37,20 +45,25 @@ class Graph {
         }
     }
 
-    fun addEdge(nameFrom: String,nameTo: String) {}
-
-    fun changeWeight(nameFrom: String, nameTo: String) {}
-
-    fun getWeight(nameFrom: String, nameTo: String) = vertices[nameFrom]!!.neighborsOut[vertices[nameTo]]!!
+    fun changeWeight(nameFrom: String, nameTo: String, newWeight: Int) {
+        vertices[nameFrom]!!.neighborsOut[vertices[nameTo]!!] = newWeight
+        vertices[nameTo]!!.neighborsIn[vertices[nameFrom]!!] = newWeight
+    }
 
     private fun connect(first: Vertex, second: Vertex, weight: Int) {
         first.neighborsOut[second] = weight
         second.neighborsIn[first] = weight
     }
 
-    fun connect(first: String, second: String, weight: Int) = connect(this[first], this[second], weight)
+    fun addEdge(first: String, second: String, weight: Int) = connect(this[first], this[second], weight)
 
-    fun deleteEdge(nameFrom: String, nameTo: String) {}
+    fun deleteEdge(nameFrom: String, nameTo: String) {
+        try {
+            vertices[nameFrom]!!.neighborsOut.remove(vertices[nameTo])
+        vertices[nameTo]!!.neighborsIn.remove(vertices[nameFrom])
+        } catch (e: IllegalArgumentException) {
+            println("Не существует такой дуги")}
+    }
 
     fun neighborsIn(name: String) = vertices[name]?.neighborsIn?.keys?.map { it.name } ?: listOf()
 
