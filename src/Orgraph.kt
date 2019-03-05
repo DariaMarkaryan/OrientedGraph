@@ -1,30 +1,40 @@
-package orgraph
-
-class Graph {
+class Orgraph {
     var numOfVertices = 0
     private val vertices = mutableMapOf<String, Vertex>()
 
-    inner class Vertex(val name: String) {
+    inner class Vertex(var name: String) {
         val neighborsIn = mutableMapOf<Vertex, Int>()
         val neighborsOut = mutableMapOf<Vertex, Int>()
-        val countingNumber = numOfVertices
     }
 
-    private operator fun get(name: String) = vertices[name] ?: throw IllegalArgumentException()
+    private operator fun get(name: String) =
+            vertices[name] ?: throw IllegalArgumentException("нет такой вершины")
 
-    fun getWeight(nameFrom: String, nameTo: String) = vertices[nameFrom]!!.neighborsOut[vertices[nameTo]]!!
+    fun getWeight(nameFrom: String, nameTo: String): Int {
+        try {
+            return vertices[nameFrom]!!.neighborsOut[vertices[nameTo]]!!
+        } catch (e: kotlin.KotlinNullPointerException) {
+            throw java.lang.IllegalArgumentException("Некорректно введены данные")
+        }
+    }
 
-    fun addVertex(name: String) {
-        if(name !in vertices.keys) {
-            vertices[name] = Vertex(name)
-            numOfVertices++
-        } else throw IllegalArgumentException("Выберите другое имя, это уже занято")
+
+    fun addVertices(vararg names: String) {
+        for (name in names) {
+            if (name !in vertices.keys) {
+                vertices[name] = Vertex(name)
+                numOfVertices++
+            } else {throw IllegalArgumentException("Выберите другое имя, имя $name уже занято")}
+        }
     }
 
     fun deleteVertex(name: String) {
-       for(v in vertices[name]!!.neighborsIn.keys){
-           v.neighborsOut.remove(vertices[name])
+       for(v in vertices[name]!!.neighborsOut.keys){
+           v.neighborsIn.keys.remove(vertices[name])
        }
+        for(v in vertices[name]!!.neighborsIn.keys){
+            v.neighborsOut.keys.remove(vertices[name])
+        }
         vertices.remove(name)
         numOfVertices--
     }
@@ -32,16 +42,7 @@ class Graph {
     fun changeName(name: String, newName: String) {
         if(newName in vertices.keys || name !in vertices.keys) throw IllegalArgumentException()
         else {
-            vertices[newName] = vertices[name]!!
-            for (neighbour in vertices[newName]!!.neighborsIn.keys) {
-                neighbour.neighborsOut.remove(vertices[name])
-                neighbour.neighborsOut[vertices[newName]!!] = getWeight(neighbour.name, newName)
-            }
-            for (neighbour in vertices[newName]!!.neighborsOut.keys) {
-                neighbour.neighborsIn.remove(vertices[name])
-                neighbour.neighborsOut[vertices[name]!!] = getWeight(newName, neighbour.name)
-            }
-                vertices.remove(name)
+           vertices[name]!!.name = newName
         }
     }
 
