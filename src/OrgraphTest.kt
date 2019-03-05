@@ -17,7 +17,11 @@ internal class OrgraphTest {
         val e = Assertions.assertThrows(IllegalArgumentException::class.java){
             subject.getWeight("B","C")
         }
-        assertEquals("Некорректно введены данные",e.message)
+        assertEquals("Нет такой дуги",e.message)
+        val err = Assertions.assertThrows(IllegalArgumentException::class.java){
+            subject.deleteEdge("R","D")
+        }
+        assertEquals("Неверно введены вершины",err.message)
     }
 
     @Test
@@ -63,24 +67,28 @@ internal class OrgraphTest {
         val e = Assertions.assertThrows(IllegalArgumentException::class.java){
             subject.changeWeight("B","A",100)
         }
-        assertEquals("Неверные данные",e.message)
+        assertEquals("Нет такой дуги",e.message)
+        val err = Assertions.assertThrows(IllegalArgumentException::class.java){
+            subject.changeWeight("B","i",100)
+        }
+        assertEquals("Неверные данные",err.message)
         subject.changeWeight("B","B",100)
         assertEquals(100, subject.getWeight("B","B"))
     }
 
     @Test
-    fun addEdge() {
-    }
-
-    @Test
     fun deleteEdge() {
-    }
+        val subject = Orgraph("A","B")
+        subject.addEdge("A", "B",12)
+        subject.deleteEdge("A","B")
+        val err = Assertions.assertThrows(IllegalArgumentException::class.java){
+            subject.deleteEdge("D","B")
+        }
+        assertEquals("Неверно введены вершины",err.message)
+        val e = Assertions.assertThrows(IllegalArgumentException::class.java){
+            subject.deleteEdge("A","B")
+        }
+        assertEquals("Нет такой дуги",e.message)
 
-    @Test
-    fun neighborsIn() {
-    }
-
-    @Test
-    fun neighborsOut() {
     }
 }
