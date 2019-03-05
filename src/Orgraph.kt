@@ -1,10 +1,16 @@
-class Orgraph {
+import java.lang.NullPointerException
+
+class Orgraph(vararg names: String) {
     var numOfVertices = 0
     private val vertices = mutableMapOf<String, Vertex>()
 
     inner class Vertex(var name: String) {
         val neighborsIn = mutableMapOf<Vertex, Int>()
         val neighborsOut = mutableMapOf<Vertex, Int>()
+    }
+
+    init {
+            this.addVertices(*names)
     }
 
     private operator fun get(name: String) =
@@ -28,27 +34,39 @@ class Orgraph {
         }
     }
 
+    fun isVertexIn(name: String)= name in vertices.keys
+
     fun deleteVertex(name: String) {
-       for(v in vertices[name]!!.neighborsOut.keys){
-           v.neighborsIn.keys.remove(vertices[name])
-       }
-        for(v in vertices[name]!!.neighborsIn.keys){
-            v.neighborsOut.keys.remove(vertices[name])
+        try {
+            for (v in vertices[name]!!.neighborsOut.keys) {
+                v.neighborsIn.keys.remove(vertices[name])
+            }
+            for (v in vertices[name]!!.neighborsIn.keys) {
+                v.neighborsOut.keys.remove(vertices[name])
+            }
+            vertices.remove(name)
+            numOfVertices--
+        } catch (e: NullPointerException) {
+            throw IllegalArgumentException("Такой вершины нет в графе")
         }
-        vertices.remove(name)
-        numOfVertices--
     }
 
     fun changeName(name: String, newName: String) {
-        if(newName in vertices.keys || name !in vertices.keys) throw IllegalArgumentException()
+        if(newName !in vertices.keys || name !in vertices.keys) throw IllegalArgumentException("Неверные данные")
         else {
            vertices[name]!!.name = newName
+            vertices[newName] = vertices[name]!!
+            vertices.remove(name)
         }
     }
 
     fun changeWeight(nameFrom: String, nameTo: String, newWeight: Int) {
-        vertices[nameFrom]!!.neighborsOut[vertices[nameTo]!!] = newWeight
-        vertices[nameTo]!!.neighborsIn[vertices[nameFrom]!!] = newWeight
+        try{
+            vertices[nameFrom]!!.neighborsOut[vertices[nameTo]!!] = newWeight
+            vertices[nameTo]!!.neighborsIn[vertices[nameFrom]!!] = newWeight
+        } catch(e: NullPointerException) {
+            throw IllegalArgumentException("Неверные данные")
+        }
     }
 
     private fun connect(first: Vertex, second: Vertex, weight: Int) {
