@@ -1,7 +1,6 @@
 import java.lang.NullPointerException
 
 class Orgraph(vararg names: String) {
-    var numOfVertices = 0
     private val vertices = mutableMapOf<String, Vertex>()
 
     inner class Vertex(var name: String) {
@@ -17,20 +16,17 @@ class Orgraph(vararg names: String) {
             vertices[name] ?: throw IllegalArgumentException("нет такой вершины")
 
     fun getWeight(nameFrom: String, nameTo: String): Int {
-        try {
-            if (!vertices[nameFrom]!!.neighborsOut.containsKey(vertices[nameTo]) &&
-                    !vertices[nameTo]!!.neighborsIn.containsKey(vertices[nameFrom])) throw IllegalArgumentException("Нет такой дуги")
-            return vertices[nameFrom]!!.neighborsOut[vertices[nameTo]]!!
-        } catch (e: NullPointerException) {
-            throw IllegalArgumentException("Неверно введены вершины")
-        }
+
+        val temp1 = vertices[nameFrom] ?: throw IllegalArgumentException("Неверно введены вершины")
+        val temp2 = vertices[nameTo] ?: throw IllegalArgumentException("Неверно введены вершины")
+
+            return temp1.neighborsOut[temp2] ?: throw IllegalArgumentException("Нет такой дуги")
     }
 
     fun addVertices(vararg names: String) {
         for (name in names) {
             if (name !in vertices.keys) {
                 vertices[name] = Vertex(name)
-                numOfVertices++
             } else {throw IllegalArgumentException("Выберите другое имя, имя $name уже занято")}
         }
     }
@@ -38,22 +34,20 @@ class Orgraph(vararg names: String) {
     fun isVertexIn(name: String)= name in vertices.keys
 
     fun deleteVertex(name: String) {
-        try {
-            for (v in vertices[name]!!.neighborsOut.keys) {
-                v.neighborsIn.keys.remove(vertices[name])
+        val temp = vertices[name] ?: throw IllegalArgumentException("Такой вершины нет в графе")
+
+            for (v in temp.neighborsOut.keys) {
+                v.neighborsIn.keys.remove(temp)
             }
-            for (v in vertices[name]!!.neighborsIn.keys) {
-                v.neighborsOut.keys.remove(vertices[name])
+            for (v in temp.neighborsIn.keys) {
+                v.neighborsOut.keys.remove(temp)
             }
             vertices.remove(name)
-            numOfVertices--
-        } catch (e: NullPointerException) {
-            throw IllegalArgumentException("Такой вершины нет в графе")
-        }
     }
 
     fun changeName(name: String, newName: String) {
-        if(newName in vertices.keys || name !in vertices.keys) throw IllegalArgumentException("Неверные данные")
+        if(newName in vertices.keys || name !in vertices.keys)
+            throw IllegalArgumentException("Неверные данные")
         else {
            vertices[name]!!.name = newName
             vertices[newName] = vertices[name]!!
@@ -62,14 +56,12 @@ class Orgraph(vararg names: String) {
     }
 
     fun changeWeight(nameFrom: String, nameTo: String, newWeight: Int) {
-        try{
-            if (!vertices[nameFrom]!!.neighborsOut.containsKey(vertices[nameTo]) &&
-                    !vertices[nameTo]!!.neighborsIn.containsKey(vertices[nameFrom])) throw IllegalArgumentException("Нет такой дуги")
-            vertices[nameFrom]!!.neighborsOut[vertices[nameTo]!!] = newWeight
-            vertices[nameTo]!!.neighborsIn[vertices[nameFrom]!!] = newWeight
-        } catch(e: NullPointerException) {
-            throw IllegalArgumentException("Неверные данные")
-        }
+        val temp1 = vertices[nameFrom] ?: throw IllegalArgumentException("Неверные данные")
+        val temp2 = vertices[nameTo] ?: throw IllegalArgumentException("Неверные данные")
+            if  (!temp1.neighborsOut.containsKey(temp2)) throw IllegalArgumentException("Нет такой дуги")
+            temp1.neighborsOut[temp2] = newWeight
+            temp2.neighborsIn[temp1] = newWeight
+
     }
 
     private fun connect(first: Vertex, second: Vertex, weight: Int) {
@@ -80,17 +72,17 @@ class Orgraph(vararg names: String) {
     fun addEdge(first: String, second: String, weight: Int) = connect(this[first], this[second], weight)
 
     fun deleteEdge(nameFrom: String, nameTo: String) {
-        try {
-            if (!vertices[nameFrom]!!.neighborsOut.containsKey(vertices[nameTo]) ||
-                    !vertices[nameTo]!!.neighborsIn.containsKey(vertices[nameFrom]))
+
+        val temp1 = vertices[nameFrom] ?: throw IllegalArgumentException("Неверно введены вершины")
+        val temp2 = vertices[nameTo] ?: throw IllegalArgumentException("Неверно введены вершины")
+
+            if (!temp1.neighborsOut.containsKey(temp2) ||
+                    !temp2.neighborsIn.containsKey(temp1))
                 throw IllegalArgumentException("Нет такой дуги")
 
-            vertices[nameFrom]!!.neighborsOut.remove(vertices[nameTo])
-            vertices[nameTo]!!.neighborsIn.remove(vertices[nameFrom])
-        } catch (e: NullPointerException){
-            throw IllegalArgumentException("Неверно введены вершины")
+        temp1.neighborsOut.remove(temp2)
+        temp2.neighborsIn.remove(temp1)
         }
-    }
 
     fun neighborsIn(name: String) = vertices[name]?.neighborsIn?.keys?.map { it.name } ?: listOf()
 
